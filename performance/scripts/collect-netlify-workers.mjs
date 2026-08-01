@@ -54,11 +54,16 @@ function assertEqual(actual, expected, label) {
   if (actual !== expected) throw new Error(`${label}: expected ${expected}, received ${actual}`);
 }
 
+export function expectedRunCount(mode, manifest) {
+  return mode === "diagnostic" ? manifest.diagnosticRuns : manifest.authoritativeRuns;
+}
+
 function assertWorkerIdentity({ context, shard, worker, course, manifest, runnerCommitSha, workerUrl }) {
+  const expectedRuns = expectedRunCount(course.mode, manifest);
   assertEqual(context.mode, course.mode, `${worker.branch} mode`);
   assertEqual(context.routeId, worker.route.id, `${worker.branch} route`);
   assertEqual(context.profile, worker.profile.id, `${worker.branch} profile`);
-  assertEqual(context.runs, manifest.authoritativeRuns, `${worker.branch} run count`);
+  assertEqual(context.runs, expectedRuns, `${worker.branch} run count`);
   assertEqual(context.courseCommitSha, course.commitSha, `${worker.branch} course commit`);
   assertEqual(new URL(context.courseDeployUrl).origin, new URL(course.deployUrl).origin, `${worker.branch} course deploy`);
   assertEqual(context.courseReleaseId, course.releaseId, `${worker.branch} course release`);
@@ -74,7 +79,7 @@ function assertWorkerIdentity({ context, shard, worker, course, manifest, runner
   assertEqual(shard.identity.manifestVersion, manifest.manifestVersion, `${worker.branch} shard manifest`);
   assertEqual(shard.routeId, worker.route.id, `${worker.branch} shard route`);
   assertEqual(shard.profile, worker.profile.id, `${worker.branch} shard profile`);
-  assertEqual(shard.reports.length, manifest.authoritativeRuns, `${worker.branch} shard reports`);
+  assertEqual(shard.reports.length, expectedRuns, `${worker.branch} shard reports`);
 }
 
 async function collectWorker({ worker, siteName, outputDirectory, course, manifest, runnerCommitSha }) {
@@ -129,6 +134,7 @@ export async function collectNetlifyWorkers({
   outputDirectory,
   manifest,
 }) {
+  const expectedRuns = expectedRunCount(course.mode, manifest);
   const deploys = await listSiteDeploys(siteId);
   const workers = selectWorkerDeploys({ deploys, manifest, runnerCommitSha });
   await mkdir(outputDirectory, { recursive: true });
@@ -154,7 +160,7 @@ export async function collectNetlifyWorkers({
     routeManifestVersion: manifest.manifestVersion,
     lighthouseVersion: lighthousePackage.version,
     expectedWorkers: manifest.routes.length * manifest.profiles.length,
-    expectedReports: manifest.routes.length * manifest.profiles.length * manifest.authoritativeRuns,
+    expectedReports: manifest.routes.length * manifest.profiles.length * expectedRuns,
     workers: collected,
   };
   await writeFile(path.join(outputDirectory, "netlify-worker-inventory.json"), `${JSON.stringify(inventory, null, 2)}\n`);

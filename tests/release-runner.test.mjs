@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readManifest } from "../performance/scripts/lib.mjs";
 import { buildMatrix } from "../performance/scripts/build-matrix.mjs";
 import { validateReleaseIdentity } from "../performance/scripts/validate-release-inputs.mjs";
-import { selectWorkerDeploys } from "../performance/scripts/collect-netlify-workers.mjs";
+import { expectedRunCount, selectWorkerDeploys } from "../performance/scripts/collect-netlify-workers.mjs";
 
 test("authoritative matrix contains sixteen isolated workers and eighty samples", async () => {
   const manifest = await readManifest();
@@ -39,6 +39,8 @@ test("diagnostic mode uses one sample and accepts selected routes", async () => 
   const matrix = buildMatrix({ mode: "diagnostic", routeIds: ["home"], manifest });
   assert.equal(matrix.include.length, 2);
   assert.ok(matrix.include.every((worker) => worker.runs === 1));
+  assert.equal(expectedRunCount("diagnostic", manifest), 1);
+  assert.equal(expectedRunCount("candidate", manifest), 5);
 });
 
 test("immutable release identity rejects mutable deploy aliases", async () => {
