@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import * as chromeLauncher from "chrome-launcher";
 import lighthouse from "lighthouse";
+import puppeteer from "puppeteer";
 import { ReportGenerator } from "lighthouse/report/generator/report-generator.js";
 import lighthousePackage from "lighthouse/package.json" with { type: "json" };
 import { isMain, parseArgs, readManifest } from "./lib.mjs";
@@ -64,6 +65,7 @@ export async function runShard({
   await mkdir(outputDirectory, { recursive: true });
 
   const chrome = await chromeLauncher.launch({
+    chromePath: process.env.CHROME_PATH || puppeteer.executablePath(),
     chromeFlags: [
       "--headless",
       "--no-sandbox",

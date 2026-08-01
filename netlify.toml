@@ -1,0 +1,22 @@
+[build]
+  command = "npm test"
+  publish = "status"
+
+[build.environment]
+  NODE_VERSION = "22.19.0"
+  NPM_FLAGS = "--no-audit --no-fund"
+  PUPPETEER_CACHE_DIR = "/opt/buildhome/.cache/puppeteer"
+
+[context.branch-deploy]
+  command = "npm run netlify:worker"
+  publish = "release-artifacts"
+
+[[headers]]
+  for = "/*.json"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-store"

@@ -11,10 +11,12 @@
     "matrix": "node performance/scripts/build-matrix.mjs",
     "validate": "node performance/scripts/validate-release-inputs.mjs",
     "shard": "node performance/scripts/run-lighthouse-shard.mjs",
-    "aggregate": "node performance/scripts/aggregate-release-report.mjs"
+    "aggregate": "node performance/scripts/aggregate-release-report.mjs",
+    "netlify:worker": "node performance/scripts/run-netlify-worker.mjs"
   },
   "dependencies": {
     "chrome-launcher": "1.2.1",
-    "lighthouse": "13.4.1"
+    "lighthouse": "13.4.1",
+    "puppeteer": "24.8.2"
   }
 }
