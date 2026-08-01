@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "manifestVersion": "2026-08-01.1",
+  "application": "germainetutoring-public-site",
+  "authoritativeRuns": 5,
+  "diagnosticRuns": 1,
+  "routes": [
+    { "id": "home", "path": "/", "label": "Marketing homepage" },
+    { "id": "programs", "path": "/programs", "label": "Tutoring programs" },
+    { "id": "methodology", "path": "/methodology", "label": "Tutoring methodology" },
+    { "id": "blog", "path": "/blog", "label": "Published blog index" },
+    { "id": "score-plateau", "path": "/blog/lsat-score-plateau", "label": "Representative strategy article" },
+    { "id": "rc-question-type-map", "path": "/blog/rc-question-type-map", "label": "RC Question Type Map article" },
+    { "id": "rc-question-type-resource", "path": "/resources/rc-question-type-map", "label": "RC Question Type Map resource" },
+    { "id": "login", "path": "/login", "label": "Student login" }
+  ],
+  "profiles": [
+    { "id": "mobile", "label": "Lighthouse standard mobile" },
+    { "id": "desktop", "label": "Lighthouse desktop preset" }
+  ],
+  "thresholds": {
+    "performance": 90,
+    "maximumPerformanceDrop": 2,
+    "largestContentfulPaintMs": 2500,
+    "totalBlockingTimeMs": 200,
+    "cumulativeLayoutShift": 0.1,
+    "nonRegressionCategories": ["accessibility", "best-practices", "seo"]
+  }
+}

@@ -14,7 +14,7 @@ const match = branch.match(/^lh-(.+)-(mobile|desktop)$/);
 if (!match) throw new Error(`unsupported Lighthouse worker branch: ${branch}`);
 
 const [, routeId, profile] = match;
-const manifest = await readManifest();
+const manifest = await readManifest(process.env.ROUTE_MANIFEST_PATH);
 const route = manifest.routes.find((entry) => entry.id === routeId);
 if (!route) throw new Error(`branch ${branch} references unknown route ${routeId}`);
 

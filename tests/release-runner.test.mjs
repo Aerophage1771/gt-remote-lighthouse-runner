@@ -13,6 +13,27 @@ test("authoritative matrix contains sixteen isolated workers and eighty samples"
   assert.equal(new Set(matrix.include.map((worker) => `${worker.routeId}:${worker.profile}`)).size, 16);
 });
 
+test("website manifest preserves the eight-route eighty-sample release gate", async () => {
+  const manifest = await readManifest("performance/routes.website.v1.json");
+  const matrix = buildMatrix({ mode: "candidate", manifest });
+  assert.equal(manifest.manifestVersion, "2026-08-01.1");
+  assert.equal(matrix.include.length, 16);
+  assert.equal(matrix.include.reduce((sum, worker) => sum + worker.runs, 0), 80);
+  assert.deepEqual(
+    manifest.routes.map((route) => route.path),
+    [
+      "/",
+      "/programs",
+      "/methodology",
+      "/blog",
+      "/blog/lsat-score-plateau",
+      "/blog/rc-question-type-map",
+      "/resources/rc-question-type-map",
+      "/login",
+    ],
+  );
+});
+
 test("diagnostic mode uses one sample and accepts selected routes", async () => {
   const manifest = await readManifest();
   const matrix = buildMatrix({ mode: "diagnostic", routeIds: ["home"], manifest });

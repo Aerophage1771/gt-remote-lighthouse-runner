@@ -9,6 +9,8 @@ The workflow provides two remote tiers:
 
 Every worker validates the target site's `/release-meta.json` before measuring. Every raw report records the exact course commit SHA, immutable Netlify deploy URL, Netlify release ID, route manifest version, Lighthouse version, route, profile, and run number.
 
+The default `performance/routes.v1.json` protects the complete course package. Set `ROUTE_MANIFEST_PATH=performance/routes.website.v1.json` for the eight-route GermaineTutoring public-site gate. Both manifests preserve the same 16-worker and 80-measurement authoritative standard.
+
 Candidate mode downloads an earlier baseline artifact by workflow run ID and enforces the versioned thresholds in `performance/routes.v1.json`. Lighthouse is only one production gate. Dashboard, student, Obi, blog, analytics, and exact-deploy reviews remain mandatory in the private release package.
 
 When GitHub-hosted runners are unavailable at the account level, the same shard implementation runs on isolated Netlify branch-deploy workers. Branches use the form `lh-<route-id>-<profile>`. Each Netlify build runs only one route/profile pair and publishes five raw JSON reports, five HTML reports, a shard manifest, and worker identity metadata.
