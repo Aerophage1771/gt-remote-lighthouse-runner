@@ -12,6 +12,7 @@
     "validate": "node performance/scripts/validate-release-inputs.mjs",
     "shard": "node performance/scripts/run-lighthouse-shard.mjs",
     "aggregate": "node performance/scripts/aggregate-release-report.mjs",
+    "collect:netlify": "node performance/scripts/collect-netlify-workers.mjs",
     "netlify:worker": "node performance/scripts/run-netlify-worker.mjs"
   },
   "dependencies": {

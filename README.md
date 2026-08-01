@@ -12,3 +12,5 @@ Every worker validates the target site's `/release-meta.json` before measuring. 
 Candidate mode downloads an earlier baseline artifact by workflow run ID and enforces the versioned thresholds in `performance/routes.v1.json`. Lighthouse is only one production gate. Dashboard, student, Obi, blog, analytics, and exact-deploy reviews remain mandatory in the private release package.
 
 When GitHub-hosted runners are unavailable at the account level, the same shard implementation runs on isolated Netlify branch-deploy workers. Branches use the form `lh-<route-id>-<profile>`. Each Netlify build runs only one route/profile pair and publishes five raw JSON reports, five HTML reports, a shard manifest, and worker identity metadata.
+
+`npm run collect:netlify -- ...` downloads each immutable worker deploy, verifies the shared course and runner identity, retains every raw report, and creates the combined validated release report. The collector uses the authenticated Netlify CLI session. It never stores an access token in the repository or artifacts.
