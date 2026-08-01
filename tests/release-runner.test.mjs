@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { readManifest } from "../performance/scripts/lib.mjs";
 import { buildMatrix } from "../performance/scripts/build-matrix.mjs";
 import { validateReleaseIdentity } from "../performance/scripts/validate-release-inputs.mjs";
@@ -31,6 +32,17 @@ test("website manifest preserves the eight-route eighty-sample release gate", as
       "/resources/rc-question-type-map",
       "/login",
     ],
+  );
+});
+
+test("GitHub workflow passes the selected route manifest through every stage", async () => {
+  const workflow = await readFile(".github/workflows/remote-lighthouse.yml", "utf8");
+  assert.match(workflow, /route_manifest:/);
+  assert.match(workflow, /default: performance\/routes\.website\.v1\.json/);
+  assert.match(workflow, /options:\n\s+- performance\/routes\.website\.v1\.json\n\s+- performance\/routes\.v1\.json/);
+  assert.equal(
+    workflow.match(/--manifest "\$\{\{ inputs\.route_manifest \}\}"/g)?.length,
+    4,
   );
 });
 

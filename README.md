@@ -9,7 +9,7 @@ The workflow provides two remote tiers:
 
 Every worker validates the target site's `/release-meta.json` before measuring. Every raw report records the exact course commit SHA, immutable Netlify deploy URL, Netlify release ID, route manifest version, Lighthouse version, route, profile, and run number.
 
-The default `performance/routes.v1.json` protects the complete course package. Set `ROUTE_MANIFEST_PATH=performance/routes.website.v1.json` for the eight-route GermaineTutoring public-site gate. Both manifests preserve the same 16-worker and 80-measurement authoritative standard.
+Choose `performance/routes.website.v1.json` in the workflow for the eight-route GermaineTutoring public-site gate. Choose `performance/routes.v1.json` for the complete course package. Both manifests preserve the same 16-worker and 80-measurement authoritative standard, and the selected manifest is passed to validation, matrix creation, every worker, and final aggregation.
 
 Candidate mode downloads an earlier baseline artifact by workflow run ID and enforces the versioned thresholds in `performance/routes.v1.json`. Lighthouse is only one production gate. Dashboard, student, Obi, blog, analytics, and exact-deploy reviews remain mandatory in the private release package.
 

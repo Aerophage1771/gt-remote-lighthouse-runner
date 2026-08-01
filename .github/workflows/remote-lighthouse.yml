@@ -23,6 +23,14 @@ on:
         description: Exact Netlify deploy ID used as the deploy URL prefix.
         required: true
         type: string
+      route_manifest:
+        description: Versioned route manifest for the site being measured.
+        required: true
+        type: choice
+        default: performance/routes.website.v1.json
+        options:
+          - performance/routes.website.v1.json
+          - performance/routes.v1.json
       diagnostic_routes:
         description: Optional comma-separated route IDs for the fast diagnostic tier.
         required: false
@@ -70,7 +78,8 @@ jobs:
           npm run validate -- \
             --commit-sha "${{ inputs.commit_sha }}" \
             --deploy-url "${{ inputs.deploy_url }}" \
-            --release-id "${{ inputs.release_id }}"
+            --release-id "${{ inputs.release_id }}" \
+            --manifest "${{ inputs.route_manifest }}"
 
       - name: Validate candidate baseline inputs
         if: inputs.mode == 'candidate'
@@ -84,7 +93,7 @@ jobs:
           MODE: ${{ inputs.mode }}
           ROUTES: ${{ inputs.diagnostic_routes }}
         run: |
-          matrix="$(npm run --silent matrix -- --mode "$MODE" --routes "$ROUTES")"
+          matrix="$(npm run --silent matrix -- --mode "$MODE" --routes "$ROUTES" --manifest "${{ inputs.route_manifest }}")"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
 
   lighthouse:
@@ -124,6 +133,7 @@ jobs:
             --route-path "${{ matrix.routePath }}" \
             --profile "${{ matrix.profile }}" \
             --runs "${{ matrix.runs }}" \
+            --manifest "${{ inputs.route_manifest }}" \
             --output-dir "release-artifacts/lighthouse/${{ matrix.routeId }}/${{ matrix.profile }}"
 
       - name: Upload route and profile reports
@@ -184,6 +194,7 @@ jobs:
             --commit-sha "${{ inputs.commit_sha }}" \
             --deploy-url "${{ inputs.deploy_url }}" \
             --release-id "${{ inputs.release_id }}" \
+            --manifest "${{ inputs.route_manifest }}" \
             "${extra[@]}"
 
       - name: Write workflow summary
