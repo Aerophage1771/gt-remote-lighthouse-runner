@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "manifestVersion": "2026-07-31.1",
+  "application": "gt-lsat-mastery-course-revision-07",
+  "authoritativeRuns": 5,
+  "diagnosticRuns": 1,
+  "routes": [
+    { "id": "home", "path": "/", "label": "Course section selector" },
+    { "id": "section-lr", "path": "/?section=lr", "label": "Logical Reasoning modules" },
+    { "id": "section-rc", "path": "/?section=rc", "label": "Reading Comprehension modules" },
+    { "id": "module-argument-part", "path": "/?module=argument-part", "label": "Argument Part lesson picker" },
+    { "id": "lesson-argument-part", "path": "/?module=argument-part&lesson=1-4", "label": "Interactive argument analysis lesson" },
+    { "id": "lesson-if-then", "path": "/?module=if-then-logic&lesson=22-4", "label": "Gated conditional reasoning analysis" },
+    { "id": "lesson-paradox", "path": "/?module=paradox-explain&lesson=19-3", "label": "Paradox lesson" },
+    { "id": "lesson-advanced-rc", "path": "/?module=advanced-passage-7-digitalization-and-copyright-law&lesson=57-1", "label": "Deep Reading Comprehension lesson" }
+  ],
+  "profiles": [
+    { "id": "mobile", "label": "Lighthouse standard mobile" },
+    { "id": "desktop", "label": "Lighthouse desktop preset" }
+  ],
+  "thresholds": {
+    "performance": 90,
+    "maximumPerformanceDrop": 2,
+    "largestContentfulPaintMs": 2500,
+    "totalBlockingTimeMs": 200,
+    "cumulativeLayoutShift": 0.1,
+    "nonRegressionCategories": ["accessibility", "best-practices", "seo"]
+  }
+}

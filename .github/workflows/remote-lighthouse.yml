@@ -1,0 +1,200 @@
+name: Remote Lighthouse release gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Diagnostic is fast, baseline records the original preview, candidate enforces release thresholds.
+        required: true
+        type: choice
+        options:
+          - diagnostic
+          - baseline
+          - candidate
+      commit_sha:
+        description: Exact 40-character commit SHA deployed to the immutable preview.
+        required: true
+        type: string
+      deploy_url:
+        description: Immutable Netlify deploy permalink, never the deploy-preview alias.
+        required: true
+        type: string
+      release_id:
+        description: Exact Netlify deploy ID used as the deploy URL prefix.
+        required: true
+        type: string
+      diagnostic_routes:
+        description: Optional comma-separated route IDs for the fast diagnostic tier.
+        required: false
+        type: string
+      baseline_run_id:
+        description: Candidate mode only, workflow run ID containing the authoritative baseline artifact.
+        required: false
+        type: string
+      baseline_release_id:
+        description: Candidate mode only, release ID used in the authoritative baseline artifact name.
+        required: false
+        type: string
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: remote-lighthouse-${{ inputs.release_id }}-${{ inputs.mode }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Validate immutable release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+    steps:
+      - name: Check out the versioned runner
+        uses: actions/checkout@v4
+
+      - name: Use the release Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Install locked runner dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Validate runner and remote release metadata
+        run: |
+          npm test
+          npm run validate -- \
+            --commit-sha "${{ inputs.commit_sha }}" \
+            --deploy-url "${{ inputs.deploy_url }}" \
+            --release-id "${{ inputs.release_id }}"
+
+      - name: Validate candidate baseline inputs
+        if: inputs.mode == 'candidate'
+        run: |
+          test -n "${{ inputs.baseline_run_id }}"
+          test -n "${{ inputs.baseline_release_id }}"
+
+      - name: Build isolated worker matrix
+        id: matrix
+        env:
+          MODE: ${{ inputs.mode }}
+          ROUTES: ${{ inputs.diagnostic_routes }}
+        run: |
+          matrix="$(npm run --silent matrix -- --mode "$MODE" --routes "$ROUTES")"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  lighthouse:
+    name: ${{ matrix.routeId }} (${{ matrix.profile }})
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 16
+      matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
+    steps:
+      - name: Check out the versioned runner
+        uses: actions/checkout@v4
+
+      - name: Use the release Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Install locked runner dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Record isolated worker versions
+        run: |
+          google-chrome --version
+          npm exec -- lighthouse --version
+
+      - name: Run isolated Lighthouse samples
+        run: |
+          npm run shard -- \
+            --commit-sha "${{ inputs.commit_sha }}" \
+            --deploy-url "${{ inputs.deploy_url }}" \
+            --release-id "${{ inputs.release_id }}" \
+            --route-id "${{ matrix.routeId }}" \
+            --route-path "${{ matrix.routePath }}" \
+            --profile "${{ matrix.profile }}" \
+            --runs "${{ matrix.runs }}" \
+            --output-dir "release-artifacts/lighthouse/${{ matrix.routeId }}/${{ matrix.profile }}"
+
+      - name: Upload route and profile reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lighthouse-${{ matrix.routeId }}-${{ matrix.profile }}
+          path: release-artifacts/lighthouse/${{ matrix.routeId }}/${{ matrix.profile }}
+          if-no-files-found: error
+          retention-days: 30
+
+  aggregate:
+    name: Validate release report
+    needs: [prepare, lighthouse]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the versioned runner
+        uses: actions/checkout@v4
+
+      - name: Use the release Node version
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: npm
+
+      - name: Install locked runner dependencies
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Download all isolated reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: lighthouse-*
+          path: release-artifacts/lighthouse/raw
+
+      - name: Download authoritative baseline for candidate mode
+        if: inputs.mode == 'candidate'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "${{ inputs.baseline_run_id }}" \
+            --name "remote-lighthouse-baseline-${{ inputs.baseline_release_id }}" \
+            --dir baseline-artifact
+          test -f baseline-artifact/release-report/validated-release-report.json
+
+      - name: Aggregate and validate
+        env:
+          MODE: ${{ inputs.mode }}
+        run: |
+          extra=()
+          if [[ "$MODE" = "candidate" ]]; then
+            extra+=(--baseline baseline-artifact/release-report/validated-release-report.json --fail-on-gate)
+          fi
+          npm run aggregate -- \
+            --input-dir release-artifacts/lighthouse/raw \
+            --output-dir release-artifacts/release-report \
+            --mode "$MODE" \
+            --commit-sha "${{ inputs.commit_sha }}" \
+            --deploy-url "${{ inputs.deploy_url }}" \
+            --release-id "${{ inputs.release_id }}" \
+            "${extra[@]}"
+
+      - name: Write workflow summary
+        if: always()
+        run: cat release-artifacts/release-report/validated-release-report.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload validated release artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: remote-lighthouse-${{ inputs.mode }}-${{ inputs.release_id }}
+          path: release-artifacts
+          if-no-files-found: error
+          retention-days: 90

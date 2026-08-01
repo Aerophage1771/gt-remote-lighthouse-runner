@@ -1,0 +1,20 @@
+{
+  "name": "gt-remote-lighthouse-runner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "scripts": {
+    "test": "node --test",
+    "matrix": "node performance/scripts/build-matrix.mjs",
+    "validate": "node performance/scripts/validate-release-inputs.mjs",
+    "shard": "node performance/scripts/run-lighthouse-shard.mjs",
+    "aggregate": "node performance/scripts/aggregate-release-report.mjs"
+  },
+  "dependencies": {
+    "chrome-launcher": "1.2.1",
+    "lighthouse": "13.4.1"
+  }
+}
