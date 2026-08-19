@@ -6,6 +6,11 @@ on:
     paths:
       - 'theme-fontsource/**'
       - '.github/workflows/theme-fontsource-pull.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'theme-fontsource/**'
+      - '.github/workflows/theme-fontsource-pull.yml'
   workflow_dispatch:
 
 permissions:
