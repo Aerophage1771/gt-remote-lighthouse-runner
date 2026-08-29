@@ -11,6 +11,10 @@
   command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs && node protect-private-preview.mjs"
   publish = "release-artifacts"
 
+[context.deploy-preview]
+  command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs && node protect-private-preview.mjs"
+  publish = "release-artifacts"
+
 [[headers]]
   for = "/*.json"
   [headers.values]
