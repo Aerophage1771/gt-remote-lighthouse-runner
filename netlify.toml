@@ -8,7 +8,11 @@
   PUPPETEER_CACHE_DIR = "/opt/buildhome/.cache/puppeteer"
 
 [context.branch-deploy]
-  command = "npm run netlify:worker"
+  command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs && node protect-private-preview.mjs"
+  publish = "release-artifacts"
+
+[context.deploy-preview]
+  command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs && node protect-private-preview.mjs"
   publish = "release-artifacts"
 
 [[headers]]
@@ -20,3 +24,9 @@
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-store"
+
+[[headers]]
+  for = "/*.enc"
+  [headers.values]
+    Cache-Control = "no-store"
+    Content-Type = "application/octet-stream"
