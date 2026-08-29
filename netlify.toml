@@ -8,7 +8,7 @@
   PUPPETEER_CACHE_DIR = "/opt/buildhome/.cache/puppeteer"
 
 [context.branch-deploy]
-  command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs"
+  command = "npm install --no-save playwright-core@1.58.2 && node preview-private-session.mjs && node protect-private-preview.mjs"
   publish = "release-artifacts"
 
 [[headers]]
@@ -22,6 +22,7 @@
     Cache-Control = "no-store"
 
 [[headers]]
-  for = "/*.png"
+  for = "/*.enc"
   [headers.values]
     Cache-Control = "no-store"
+    Content-Type = "application/octet-stream"
