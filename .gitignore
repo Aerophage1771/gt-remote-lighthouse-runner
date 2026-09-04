@@ -5,3 +5,6 @@ baseline-artifact/
 
 # Local Netlify folder
 .netlify
+
+# Generated codebase scan (86 MB); the seven docs/codebase/*.md files are tracked.
+docs/codebase/.codebase-scan.txt
