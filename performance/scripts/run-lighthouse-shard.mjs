@@ -2,6 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import * as chromeLauncher from "chrome-launcher";
 import lighthouse from "lighthouse";
+import { userAgents } from "lighthouse/core/config/constants.js";
 import puppeteer from "puppeteer";
 import { ReportGenerator } from "lighthouse/report/generator/report-generator.js";
 import lighthousePackage from "lighthouse/package.json" with { type: "json" };
@@ -82,6 +83,10 @@ export async function runShard({
         logLevel: "error",
         output: "json",
         onlyCategories: categories,
+        // Lighthouse's own user agent plus GTSynthetic, so PostHog's test-account filter leaves these visits out.
+        // shortcut: the Node API ignores `preset`, so every profile, desktop included, runs Lighthouse's mobile
+        // settings and mobile user agent; use userAgents[profile] once desktop runs get the real desktop config.
+        emulatedUserAgent: `${userAgents.mobile} GTSynthetic`,
         ...(profile === "desktop" ? { preset: "desktop" } : {}),
       });
       if (!result?.lhr) throw new Error(`Lighthouse returned no result for run ${run}`);
